@@ -1,12 +1,28 @@
 #!/usr/bin/python
 
+##### (Base code)
+#
 ## Massimiliano Patacchiola, Plymouth University 2016
 #
 # This code uses Self-Organizing Map (SOM) to classify different poses (pan, tilt) of a humanoid robot (NAO).
-# It is possible to use a real ROBOT or a simulated one to visualise the Head movements in real time.
-# For each epoch it is possible to save an image which represents the weights of the SOM.
-# Each weight is a 2D numpy array with values ranging between -90/90 (Yaw) and -30/+30 (Pitch).
-# At the end of the example the network is saved inside the file: ./output/som_babbling.npz
+#
+# ------------------------------------------------------------
+###### (Modifications)
+#
+## Marco Flores-Corondo, Universidad Autónoma del Estado de Morelos 2020
+#
+#
+# The SOM instance inside the pyERA has been modified; saveplain attribute has been added to save 
+# self._weights_matrix as a .txt file. Pleade add to the SOM instance the following and re-install pyERA
+#
+#    def saveplain(self,path="./", name="som"):
+ #       outfile=path+name+".txt"
+ #       data=[]
+ #       for i in range(self._matrix_size):
+ #           for j in range(self._matrix_size):
+ #               temporal=self.get_unit_weights(i,j)
+ #               data.append(temporal)
+ #       np.savetxt(outfile,data,delimiter=",")
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,23 +35,18 @@ from pyERA.som import Som
 from pyERA.utils import ExponentialDecay
 from pyERA.utils import LinearDecay
 
-USE_NAO = False #if True connect to the NAO and move the Head
+USE_NAO = False #if True connect to the NAO
 NAO_IP = "192.168.0.100"
 NAO_PORT = 9559
 effectorName="RArm"
-#If you have a NAO Robot it is
-#possible to use it for visualising
-#the head movements in real time.
-#It is possible to use also the Choregraphe simulator.
-#USE_NAO = False #if True connect to the NAO and move the Head
-#NAO_IP = "192.168.0.100"
-#NAO_PORT = 9559
+# uncomment to declare pynaoqi library direction or write the following comand before running the script:
+# export PYTHONPATH={PYTHONPATH}:location/of/pynaoqi
 if(USE_NAO == True):
     import sys
-    sys.path.insert(1, "./pynaoqi-python2.7-2.1.4.13-linux64")
+    #sys.path.insert(1, "location/of/pynaoqi")  #optional line
     from naoqi import ALProxy
 
-def  save_map_image(save_path, size, weight_matrix, yaw_max_range=90.0, pitch_max_range=90.0):
+def  save_map_image(save_path, size, weight_matrix, yaw_max_range=2.0, pitch_max_range=2.0):
     x = np.arange(0, size, 1) + 0.5
     y = np.arange(0, size, 1) + 0.5
 
@@ -141,25 +152,12 @@ def main():
         target= np.array([xAxis, yAxis*coef, zAxis])
         target=[axis*np.pi/180 for axis in target]
         if (USE_NAO==True):
-            input_vector=([target[i] + effectorInit[i] for i in range(3)])
+            input_vector=np.aray([target[i] + effectorInit[i] for i in range(3)],dtype=np.float32)
         else:
             input_vector=np.array([target[i]for i in range(3)], dtype=np.float32)
-        #yaw = np.random.randint(-90, +90)
-        #pitch = np.random.randint(-29, +29)
-        
-
-        #If the NAO is used then move the head of
-        #the robot in the same position
+        # Move Robot to target position
         if(USE_NAO == True):
             _al_motion_proxy.wbEnableEffectorControl(effectorName, USE_NAO)
-            #coef = 1.0
-            #if (effectorName == "LArm"):
-                #coef = +1.0
-            #elif (effectorName == "RArm"):
-                #coef = -1.0
-            #target= np.array([xAxis, yAxis*coef, zAxis])
-            #target=[axis*np.pi/180 for axis in target]
-            #input_vector=[target[i] + effectorInit[i] for i in range(3)]
             print("Elmer Ofeto is feeding these angles to NAO: " + str(input_vector))
             _al_motion_proxy.wbSetEffectorControl(effectorName, input_vector)
             time.sleep(3.0) #Get time to NAO to reach the point
@@ -192,8 +190,11 @@ def main():
 
     #Saving the network
     file_name = output_path + "som_babbling.npz"
+    text_file= output_path + "som_RArm_babbling.txt"
     print("Saving the network in: " + str(file_name))
     my_som.save(path=output_path, name="som_babbling")
+    print("Saving as plain text in:"+str(text_fle))
+    my_som.saveplain(path=output_path, name= "som_lArm_babbling")
 
 
     #img = np.rint(my_som.return_weights_matrix())
