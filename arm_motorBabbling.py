@@ -87,7 +87,7 @@ def main():
         if(SAVE_IMAGE == True):
             if ((epoch%(tot_epoch/10)) ==0) or (epoch==tot_epoch+1):
                 save_path = output_path + str(epoch) + ".png"
-                img = np.rint(my_som.return_weights_matrix())
+                img = my_som.return_weights_matrix()
                 plt.axis("off")
                 plt.imshow(img,cmap="rainbow", vmin=-10,vmax=10)
                 plt.savefig(save_path)
