@@ -75,7 +75,7 @@ def main():
 
     #Init the SOM
     som_size = 16
-    my_som = Som(matrix_size=som_size, input_size=3, low=-10, high=+10, round_values=False)  
+    my_som = Som(matrix_size=som_size, input_size=3, low=-1, high=+1, round_values=False)  
 
     #Init the parameters
     tot_epoch = 100
@@ -91,27 +91,27 @@ def main():
                 save_path = output_path + str(epoch) + ".png"
                 img = my_som.return_weights_matrix()
                 plt.axis("off")
-                plt.imshow(img,cmap="rainbow", vmin=-10,vmax=10)
+                plt.imshow(img,cmap="rainbow", vmin=-1,vmax=1)
                 plt.savefig(save_path)
                
         if(SAVE_PLAIN==True):
             if ((epoch%(tot_epoch/10)) ==0)
-                my_som.saveplain(path=output_path, name= "som_lArm_babbling"+str(epoch))
+                my_som.saveplain(path=output_path, name= effector+"_som_babbling"+str(epoch))
 
         #Updating the learning rate and the radius
         learning_rate = my_learning_rate.return_decayed_value(global_step=epoch)
         radius = my_radius.return_decayed_value(global_step=epoch)
 
         #Generating random input vectors
-        xAxis=round(np.random.uniform(0,0.12),4)
-        yAxis=round(np.random.uniform(-0.5,0.10),4)
-        zAxis=round(np.random.uniform(-0.10,0.10),4)
-        if (effectorName == "LArm"):
-                coef = +1.0
-        elif (effectorName == "RArm"):
-                coef = -1.0
-        target= np.array([xAxis, yAxis*coef, zAxis])
-        target=[axis*(180/np.pi) for axis in target]
+        if (effectorName=="LArm"):
+            xAxis=round(np.random.uniform(0,0.12),4)
+            yAxis=round(np.random.uniform(-0.5,0.10),4)
+            zAxis=round(np.random.uniform(-0.10,0.10),4)
+        elif (effectorName=="RArm"):
+            xAxis=round(np.random.uniform(0,0.12),4)
+            yAxis=round(np.random.uniform(-0.10,0.5),4)
+            zAxis=round(np.random.uniform(-0.10,0.10),4)
+        target= np.array([xAxis, yAxis, zAxis])
         if (USE_NAO==True):
             input_vector=np.aray([target[i] + effectorInit[i] for i in range(3)],dtype=np.float32)
         else:
@@ -121,7 +121,7 @@ def main():
             _al_motion_proxy.wbEnableEffectorControl(effectorName, USE_NAO)
             print("Elmer Ofeto is feeding these angles to NAO: " + str(input_vector))
             _al_motion_proxy.wbSetEffectorControl(effectorName, input_vector)
-            time.sleep(3.0) #Get time to NAO to reach the point
+            time.sleep(4.0) #Get time to NAO to reach the point
 
         #Estimating the BMU coordinates
         bmu_index = my_som.return_BMU_index(input_vector)
@@ -131,7 +131,7 @@ def main():
         bmu_neighborhood_list = my_som.return_unit_round_neighborhood(bmu_index[0], bmu_index[1], radius=radius)  
 
         #Learning step      
-        my_som.training_single_step(input_vector, units_list=bmu_neighborhood_list, learning_rate=learning_rate, radius=radius, weighted_distance=False)
+        my_som.training_single_step(input_vector, units_list=bmu_neighborhood_list, learning_rate=learning_rate, radius=radius, weighted_distance=True)
 
         print("")
         print("Epoch: " + str(epoch))
@@ -144,18 +144,18 @@ def main():
 
     #Reset the NAO head
     if(USE_NAO == True):
-        print("[PYERA] Reset NAO head...")
-        _al_motion_proxy.setAngles("HeadPitch", 0, 0.3)
-        _al_motion_proxy.setAngles("HeadYaw", 0, 0.3)
-        time.sleep(2.0)
+        print("Resetting NAO")
+        isEnabled    = False
+        _al_motion_proxy.wbEnableEffectorControl(effectorName, isEnabled)
+        time.sleep(4.0)
 
     #Saving the network
     file_name = output_path + "som_babbling.npz"
-    text_file= output_path + "som_RArm_babbling.txt"
+    text_file= output_path + effector+"_som_babbling.txt"
     print("Saving the network in: " + str(file_name))
     my_som.save(path=output_path, name="som_babbling")
     print("Saving as plain text in:"+str(text_fle))
-    my_som.saveplain(path=output_path, name= "som_lArm_babbling"+str(epoch))
+    my_som.saveplain(path=output_path, name= effector+"_som_babbling"+str(epoch))
 
 
     #img = np.rint(my_som.return_weights_matrix())
