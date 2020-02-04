@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+# -*- coding: utf-8 -*-
 ##### (Base code)
 #
 ## Massimiliano Patacchiola, Plymouth University 2016
@@ -95,7 +95,7 @@ def main():
                 plt.savefig(save_path)
                
         if(SAVE_PLAIN==True):
-            if ((epoch%(tot_epoch/10)) ==0)
+            if ((epoch%(tot_epoch/10)) ==0):
                 my_som.saveplain(path=output_path, name= effector+"_som_babbling"+str(epoch))
 
         #Updating the learning rate and the radius
@@ -151,11 +151,11 @@ def main():
 
     #Saving the network
     file_name = output_path + "som_babbling.npz"
-    text_file= output_path + effector+"_som_babbling.txt"
+    text_file= output_path + effectorName+"_som_babbling.txt"
     print("Saving the network in: " + str(file_name))
     my_som.save(path=output_path, name="som_babbling")
     print("Saving as plain text in:"+str(text_fle))
-    my_som.saveplain(path=output_path, name= effector+"_som_babbling"+str(epoch))
+    my_som.saveplain(path=output_path, name= effectorName+"_som_babbling"+str(epoch))
 
 
     #img = np.rint(my_som.return_weights_matrix())
