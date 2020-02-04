@@ -67,7 +67,9 @@ def main():
     
     #Set to True if you want to save the SOM images inside a folder.
     SAVE_IMAGE = True
-    output_path = "./output/" #Change this path to save in a different forlder
+    #Set to True if you want to save every SOM every 10% of training as plain text.
+    SAVE_PLAIN= False
+    output_path = "./output/" #Change this path to save in a different folder
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
@@ -91,6 +93,10 @@ def main():
                 plt.axis("off")
                 plt.imshow(img,cmap="rainbow", vmin=-10,vmax=10)
                 plt.savefig(save_path)
+               
+        if(SAVE_PLAIN==True):
+            if ((epoch%(tot_epoch/10)) ==0)
+                my_som.saveplain(path=output_path, name= "som_lArm_babbling"+str(epoch))
 
         #Updating the learning rate and the radius
         learning_rate = my_learning_rate.return_decayed_value(global_step=epoch)
@@ -149,7 +155,7 @@ def main():
     print("Saving the network in: " + str(file_name))
     my_som.save(path=output_path, name="som_babbling")
     print("Saving as plain text in:"+str(text_fle))
-    my_som.saveplain(path=output_path, name= "som_lArm_babbling")
+    my_som.saveplain(path=output_path, name= "som_lArm_babbling"+str(epoch))
 
 
     #img = np.rint(my_som.return_weights_matrix())
