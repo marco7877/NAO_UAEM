@@ -46,54 +46,7 @@ if(USE_NAO == True):
     #sys.path.insert(1, "location/of/pynaoqi")  #optional line
     from naoqi import ALProxy
 
-def  save_map_image(save_path, size, weight_matrix, yaw_max_range=2.0, pitch_max_range=2.0):
-    x = np.arange(0, size, 1) + 0.5
-    y = np.arange(0, size, 1) + 0.5
 
-    fig = plt.figure()
-    #plt.title('NAO Head Pose SOM')
-    ax = fig.gca()
-    ax.set_xlim([0, size])
-    ax.set_ylim([0, size])
-    ax.set_xticks(np.arange(1, size+1, 1))
-    ax.set_yticks(np.arange(1, size+1, 1))
-
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-
-    ticklines = ax.get_xticklines() + ax.get_yticklines()
-    gridlines = ax.get_xgridlines() + ax.get_ygridlines()
-    ticklabels = ax.get_xticklabels() + ax.get_yticklabels()
-
-    for line in ticklines:
-        line.set_linewidth(2)
-
-    for line in gridlines:
-        line.set_linestyle('-')
-        line.set_color("grey")
-
-
-    tot_rows = weight_matrix.shape[0]
-    tot_cols = weight_matrix.shape[1]
-
-    for row in range(0, tot_rows):
-        for col in range(0, tot_cols):
-            yaw=weight_matrix[row,col,0]
-            pitch=weight_matrix[row,col,1]
-            if(pitch > 30.0 or pitch < -30): pitch_max_range=90.0
-            else: pitch_max_range = 30.0
-            yaw_arrow = (yaw / yaw_max_range) * 0.4
-            pitch_arrow = (pitch / pitch_max_range) * 0.4
-            ax.arrow(row+0.5, col+0.5, yaw_arrow, pitch_arrow, head_width=0.1, head_length=0.1, fc='k', ec='k')
-
-
-    #s is the dot area and c is the color
-    #plt.scatter(x, y, s=3.0, c="black")
-    #plt.grid()
-    #plt.show()
-    ax.axis('off')
-    plt.savefig(save_path, dpi=300, facecolor='white')
-    plt.close('all')
 
 
 def main():  
@@ -120,7 +73,7 @@ def main():
 
     #Init the SOM
     som_size = 16
-    my_som = Som(matrix_size=som_size, input_size=3, low=-2, high=+2, round_values=False)  
+    my_som = Som(matrix_size=som_size, input_size=3, low=-10, high=+10, round_values=False)  
 
     #Init the parameters
     tot_epoch = 100
@@ -132,25 +85,27 @@ def main():
 
         #Saving the image associated with the SOM weights
         if(SAVE_IMAGE == True):
-            if (((epoch*100)/tot_epoch)%10 ==0) or (epoch==tot_epoch+1):
+            if ((epoch%(tot_epoch/10)) ==0) or (epoch==tot_epoch+1):
                 save_path = output_path + str(epoch) + ".png"
-                save_map_image(save_path, som_size, my_som.return_weights_matrix())
-            
+                img = my_som.return_weights_matrix()
+                plt.axis("off")
+                plt.imshow(img,cmap="rainbow", vmin=-10,vmax=10)
+                plt.savefig(save_path)
 
         #Updating the learning rate and the radius
         learning_rate = my_learning_rate.return_decayed_value(global_step=epoch)
         radius = my_radius.return_decayed_value(global_step=epoch)
 
         #Generating random input vectors
-        xAxis=round(np.random.uniform(0,0.12),2)
-        yAxis=round(np.random.uniform(-0.5,0.10),2)
-        zAxis=round(np.random.uniform(-0.10,0.10),2)
+        xAxis=round(np.random.uniform(0,0.12),4)
+        yAxis=round(np.random.uniform(-0.5,0.10),4)
+        zAxis=round(np.random.uniform(-0.10,0.10),4)
         if (effectorName == "LArm"):
                 coef = +1.0
         elif (effectorName == "RArm"):
                 coef = -1.0
         target= np.array([xAxis, yAxis*coef, zAxis])
-        target=[axis*np.pi/180 for axis in target]
+        target=[axis*(180/np.pi) for axis in target]
         if (USE_NAO==True):
             input_vector=np.aray([target[i] + effectorInit[i] for i in range(3)],dtype=np.float32)
         else:
