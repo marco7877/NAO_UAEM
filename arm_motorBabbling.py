@@ -154,7 +154,7 @@ def main():
     text_file= output_path + effectorName+"_som_babbling.txt"
     print("Saving the network in: " + str(file_name))
     my_som.save(path=output_path, name="som_babbling")
-    print("Saving as plain text in:"+str(text_fle))
+    print("Saving as plain text in:"+str(text_file))
     my_som.saveplain(path=output_path, name= effectorName+"_som_babbling"+str(epoch))
 
 
