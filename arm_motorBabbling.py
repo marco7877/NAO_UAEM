@@ -52,7 +52,7 @@ if(USE_NAO == True):
 def main():  
 
     if(USE_NAO == True):
-        print("Foetus engineer will Init the Nao Robot...")
+        print("I will Init the Nao Robot...")
         _al_motion_proxy = ALProxy("ALMotion", NAO_IP, int(NAO_PORT))
         _al_posture_proxy = ALProxy("ALRobotPosture", NAO_IP, int(NAO_PORT))
         _al_posture_proxy.goToPosture("Crouch", 0.5)
@@ -63,7 +63,7 @@ def main():
         time.sleep(3.0)
         _al_motion_proxy.wbEnableEffectorControl(effectorName, USE_NAO)
         time.sleep(2.0)
-        print("Johny Nazco is starting the training...")
+        print("I am starting the training...")
     
     #Set to True if you want to save the SOM images inside a folder.
     SAVE_IMAGE = True
